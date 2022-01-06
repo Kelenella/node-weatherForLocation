@@ -6,7 +6,7 @@ const app = express();
 app.use(express.json());
 app.use(morgan("tiny"));
 
-const { postsRouter } = require("./routers/postsRouter");
+const { postsRouter } = require("./src/routers/postsRouter");
 
 const PORT = process.env.PORT || 8080;
 
