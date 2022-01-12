@@ -1,17 +1,13 @@
-const shortid = require("shortid");
-let posts = [
-  { id: "1", topic: "test1", text: "test text1" },
-  { id: "2", topic: "test2", text: "test text2" },
-  { id: "3", topic: "test3", text: "test text3" },
-];
+const { ObjectId } = require("mongodb");
 
-const getPosts = (req, res) => {
-  res.json({ posts, status: "success" });
+const getPosts = async (req, res) => {
+  const posts = await req.db.Posts.find({}).toArray();
+  res.json(posts);
 };
 
-const getPostById = (req, res) => {
+const getPostById = async (req, res) => {
   const { id } = req.params;
-  const [post] = posts.filter((item) => item.id === id);
+  const post = await req.db.Posts.findOne({ _id: new ObjectId(id) });
   if (!post) {
     return res
       .status(400)
@@ -20,24 +16,28 @@ const getPostById = (req, res) => {
   res.json({ post, status: "success" });
 };
 
-const addNewPost = (req, res) => {
+const addNewPost = async (req, res) => {
   const { topic, text } = req.body;
-  posts.push({ id: shortid.generate(), topic, text });
+  await req.db.Posts.insert({ topic, text });
   res.json({ status: "success" });
 };
 
-const changePost = (req, res) => {
+const changePost = async (req, res) => {
   const { topic, text } = req.body;
-  posts.forEach((post) => {
-    if (post.id === req.params.id) {
-      post.topic = topic;
-      post.text = text;
-    }
+  await req.db.Posts.updateOne(
+    {
+      _id: new ObjectId(req.params.id),
+    },
+    { $set: { topic, text } }
+  );
+  res.json({ status: "success" });
+};
+
+const deletePost = async (req, res) => {
+  await req.db.Posts.deleteOne({
+    _id: new ObjectId(req.params.id),
   });
   res.json({ status: "success" });
 };
-const deletePost = (req, res) => {
-  posts = posts.filter((item) => item.id !== req.params.id);
-  res.json({ status: "success" });
-};
+
 module.exports = { getPosts, getPostById, addNewPost, changePost, deletePost };

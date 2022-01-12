@@ -2,6 +2,9 @@ const express = require("express");
 const router = express.Router();
 
 const { addPostValidation } = require("../middlewares/validationMiddleware");
+const { asyncWrapper } = require("../helpers/apiHelpers");
+
+const modelsMiddleware = require("../middlewares/models");
 const {
   getPosts,
   getPostById,
@@ -10,16 +13,16 @@ const {
   deletePost,
 } = require("../controllers/postsController");
 
-//GET for /api/posts - получить список всех постов
-router.get("/", getPosts);
+router.use(modelsMiddleware);
 
-//GET for /api/posts/id - получить пост по id
-router.get("/:id", getPostById);
+router.get("/", asyncWrapper(getPosts));
 
-router.post("/", addPostValidation, addNewPost);
+router.get("/:id", asyncWrapper(getPostById));
 
-router.put("/:id", addPostValidation, changePost);
+router.post("/", addPostValidation, asyncWrapper(addNewPost));
 
-router.delete("/:id", deletePost);
+router.put("/:id", addPostValidation, asyncWrapper(changePost));
+
+router.delete("/:id", asyncWrapper(deletePost));
 
 module.exports = { postsRouter: router };
